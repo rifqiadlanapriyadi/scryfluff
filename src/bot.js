@@ -23,21 +23,52 @@ async function getRandomCardWithFlavor() {
     return card;
 }
 
+const subreddits = ["MTGmemes", "magicthecirclejerking"]
+var subredditIndex = 0;
+async function getRandomRedditMeme() {
+    const subreddit = subreddits[subredditIndex];
+    subredditIndex = (subredditIndex + 1) % subreddits.length;
+
+    const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=100`
+    console.log(`Calling ${url}`);
+    const response = await fetch(url);
+    const posts = (await response.json()).data.children.filter(post => post.data.post_hint === "image");
+
+    if (posts.length === 0) {
+        return getRandomRedditMeme();
+    }
+
+    return posts[Math.floor(Math.random() * posts.length)].data;
+}
+
 
 async function handleCommand(message, command, args){
+    var embed = new EmbedBuilder()
     switch (command){
         case 'help':
             break;
         case 'flavor':
             const card = await getRandomCardWithFlavor();
 
-            const embed = new EmbedBuilder()
-                .setColor(0x0099FF) // Set a color (Magic Blue)
-                .setTitle(card.name) // Card name
-                .setURL(card.scryfall_uri) // Hyperlink to Scryfall
+            embed = embed
+                .setColor(0x0099FF)
+                .setTitle(card.name)
+                .setURL(card.scryfall_uri)
                 .setDescription(`***${card.flavor_text}***`)
                 .setThumbnail(card.image_uris.normal)
                 .setFooter({ text: "Sourced from Scryfall", iconURL: "https://scryfall.com/favicon.ico" });
+
+            message.reply({ embeds: [embed] });
+            break;
+        case 'meme':
+            const post = await getRandomRedditMeme();
+
+            embed = embed
+                .setColor(0x570bb5)
+                .setTitle(post.title)
+                .setURL(`https://www.reddit.com${post.permalink}`)
+                .setImage(post.url)
+                .setFooter({ text: "Sourced from Reddit", iconURL: "https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png" });
 
             message.reply({ embeds: [embed] });
             break;

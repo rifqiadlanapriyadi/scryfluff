@@ -42,7 +42,7 @@ async function getRandomRedditMeme() {
 }
 
 async function getRandomCommander(fromDate, colorCount) {
-    const response = await fetch(`https://api.scryfall.com/cards/random?q=is:commander+id=${colorCount}+date%3E${fromDate}`);
+    const response = await fetch(`https://api.scryfall.com/cards/random?q=is:commander+id=${colorCount}+date%3E${fromDate}+f:pioneer`);
     return await response.json();
 }
 
